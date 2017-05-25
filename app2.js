@@ -4,17 +4,29 @@ const http = require('http');
 
 var firstMethod = function() {
   var promise = new Promise(function(resolve, reject) {
-    const data = {test: '123'};
+    const data = 'abcd';
     if (data) {
       console.log(data);
-      resolve(data);
+      resolve(data);  // resolve returns data and continues in the .then() route
     } else {
-      reject('no data');
+      console.log(data);
+      reject('no data'); // reject returns the data and continues in the .catch() route
     }
 
   });
   return promise;
 };
+
+function secondMethod(input) {
+  var promise = new Promise( (resolve, reject)=> {
+    if(input){
+      resolve(input.toUpperCase());  // resolve returns data and continues in the .then() route
+    } else {
+      reject('Error in secondMethod');
+    }
+  });
+  return promise;
+}
 
 
 function success(input) {
@@ -29,7 +41,13 @@ function failure(input) {
 
 firstMethod()
   .then((output) => {
-    success(output);
+    secondMethod(output)
+    .then((output) => {
+      success(output);
+    })
+    .catch((output) => {
+      failure(output);
+    });
   })
   .catch((output)=> {
     failure(output);
