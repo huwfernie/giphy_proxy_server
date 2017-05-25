@@ -25,9 +25,15 @@ function failure(input) {
   console.log('failure ',input);
 }
 
+// Make the call
+
 firstMethod()
-  .then(success())
-  .catch(failure());
+  .then((output) => {
+    success(output);
+  })
+  .catch((output)=> {
+    failure(output);
+  });
 
 
 
