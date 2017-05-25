@@ -3,13 +3,13 @@ const app = express();
 const http = require('http');
 
 
-var options = {
+const apiOptions = {
   host: 'api.giphy.com',
   path: '/v1/gifs/trending?api_key=dc6zaTOxFJmzC'
 };
 let body = {};
 
-var firstMethod = function() {
+function httpGet(options) {
   var promise = new Promise(function(resolve, reject) {
     http.get(options, function(res) {
       console.log('STATUS: ' + res.statusCode);
@@ -18,7 +18,6 @@ var firstMethod = function() {
       // Buffer the body entirely for processing as a whole.
       var bodyChunks = [];
       res.on('data', function(chunk) {
-        // You can process streamed parts here...
         bodyChunks.push(chunk);
       }).on('end', function() {
         body = Buffer.concat(bodyChunks);
@@ -31,16 +30,13 @@ var firstMethod = function() {
         }
       });
     });
-
   });
   return promise;
-};
+}
 
 function secondMethod(input) {
   var promise = new Promise( (resolve, reject)=> {
     if(input){
-
-      console.log(input.data);
       var newArr = input.data.map(function(element){
         return {
           id: element.id,
@@ -48,26 +44,14 @@ function secondMethod(input) {
           slug: element.slug
         };
       });
-
-
-      resolve(newArr);  // resolve returns data and continues in the .then() route
+      resolve({data: newArr});  // resolve returns data and continues in the .then() route
     } else {
       reject('Error in secondMethod'); // reject returns 'Error in...' and continues in the .catch() route
     }
-
-    // function filter(element, index, array){
-    //   console.log({ id: element.id });
-    //   temp = temp.push({ id: element.id } );
-    // }
-
   });
   return promise;
 }
 
-
-// function success(input) {
-//   console.log('success ',input);
-// }
 
 function failure(input) {
   console.log('failure ',input);
@@ -76,7 +60,7 @@ function failure(input) {
 // Make the call
 
 app.get('/', (request, response) => {
-  firstMethod()
+  httpGet(apiOptions)
     .then((output) => {
       secondMethod(output)
       .then((output) => {
