@@ -39,10 +39,27 @@ var firstMethod = function() {
 function secondMethod(input) {
   var promise = new Promise( (resolve, reject)=> {
     if(input){
-      resolve(input);  // resolve returns data and continues in the .then() route
+
+      console.log(input.data);
+      var newArr = input.data.map(function(element){
+        return {
+          id: element.id,
+          url: element.images.fixed_height.url,
+          slug: element.slug
+        };
+      });
+
+
+      resolve(newArr);  // resolve returns data and continues in the .then() route
     } else {
       reject('Error in secondMethod'); // reject returns 'Error in...' and continues in the .catch() route
     }
+
+    // function filter(element, index, array){
+    //   console.log({ id: element.id });
+    //   temp = temp.push({ id: element.id } );
+    // }
+
   });
   return promise;
 }
