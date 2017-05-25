@@ -2,16 +2,35 @@ const express = require('express');
 const app = express();
 const http = require('http');
 
+
+var options = {
+  host: 'api.giphy.com',
+  path: '/v1/gifs/trending?api_key=dc6zaTOxFJmzC'
+};
+let body = {};
+
 var firstMethod = function() {
   var promise = new Promise(function(resolve, reject) {
-    const data = 'abcd';
-    if (data) {
-      console.log(data);
-      resolve(data);  // resolve returns data and continues in the .then() route
-    } else {
-      console.log(data);
-      reject('no data'); // reject returns the data and continues in the .catch() route
-    }
+    http.get(options, function(res) {
+      console.log('STATUS: ' + res.statusCode);
+      console.log('HEADERS: ' + JSON.stringify(res.headers));
+
+      // Buffer the body entirely for processing as a whole.
+      var bodyChunks = [];
+      res.on('data', function(chunk) {
+        // You can process streamed parts here...
+        bodyChunks.push(chunk);
+      }).on('end', function() {
+        body = Buffer.concat(bodyChunks);
+        body = JSON.parse(body);
+
+        if (body) {
+          resolve(body);  // resolve returns body and continues in the .then() route
+        } else {
+          reject('no data'); // reject returns the data and continues in the .catch() route
+        }
+      });
+    });
 
   });
   return promise;
@@ -20,7 +39,7 @@ var firstMethod = function() {
 function secondMethod(input) {
   var promise = new Promise( (resolve, reject)=> {
     if(input){
-      resolve(input.toUpperCase());  // resolve returns data and continues in the .then() route
+      resolve(input);  // resolve returns data and continues in the .then() route
     } else {
       reject('Error in secondMethod');
     }
@@ -29,9 +48,9 @@ function secondMethod(input) {
 }
 
 
-function success(input) {
-  console.log('success ',input);
-}
+// function success(input) {
+//   console.log('success ',input);
+// }
 
 function failure(input) {
   console.log('failure ',input);
@@ -39,42 +58,20 @@ function failure(input) {
 
 // Make the call
 
-firstMethod()
-  .then((output) => {
-    secondMethod(output)
+app.get('/', (request, response) => {
+  firstMethod()
     .then((output) => {
-      success(output);
+      secondMethod(output)
+      .then((output) => {
+        response.json(output);
+      })
+      .catch((output) => {
+        failure(output);
+      });
     })
-    .catch((output) => {
+    .catch((output)=> {
       failure(output);
     });
-  })
-  .catch((output)=> {
-    failure(output);
-  });
+});
 
-
-
-
-
-//
-//
-// var secondMethod = function(someStuff) {
-//   var promise = new Promise(function(resolve){
-//     setTimeout(function() {
-//       console.log('second method completed');
-//       resolve({newData: someStuff.data + ' some more data'});
-//     }, 1000);
-//   });
-//   return promise;
-// };
-//
-// var thirdMethod = function(someStuff) {
-//   var promise = new Promise(function(resolve){
-//     setTimeout(function() {
-//       console.log('third method completed');
-//       resolve({result: someStuff.newData});
-//     }, 2000);
-//   });
-//   return promise;
-// };
+app.listen(3000);

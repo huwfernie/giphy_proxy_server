@@ -39,7 +39,5 @@ function  sendReq() {
       // console.log(body);
       return body;
     });
-  }).then((body) => {
-    console.log('this', body);
   });
 }
