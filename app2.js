@@ -27,7 +27,7 @@ var firstMethod = function() {
         if (body) {
           resolve(body);  // resolve returns body and continues in the .then() route
         } else {
-          reject('no data'); // reject returns the data and continues in the .catch() route
+          reject('no data'); // reject returns 'no data' and continues in the .catch() route
         }
       });
     });
@@ -41,7 +41,7 @@ function secondMethod(input) {
     if(input){
       resolve(input);  // resolve returns data and continues in the .then() route
     } else {
-      reject('Error in secondMethod');
+      reject('Error in secondMethod'); // reject returns 'Error in...' and continues in the .catch() route
     }
   });
   return promise;
