@@ -1,0 +1,15 @@
+{
+  "name": "giphybackend",
+  "version": "1.0.0",
+  "description": "proxy server for giphy",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Huw",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.3",
+    "nodemon": "^1.11.0"
+  }
+}
