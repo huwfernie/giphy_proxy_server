@@ -38,16 +38,32 @@ function httpGet(options) {
 function filterForGet(input) {
   var promise = new Promise( (resolve, reject)=> {
     if(input){
-      var newArr = input.data.map(function(element){
+      // console.log(input);
+      var newArr = input.entries.map(function(element){
+        // console.log(element.id);
         return {
-          id: element.id,
-          url: element.images.fixed_height.url,
-          slug: element.slug
+          date_created: element.date_created,
+          likes: element.likes.length,
+          title: element.title,
+          cover_url: element.cover_url,
+          username: element.user.username
         };
       });
+      // console.log(newArr);
       resolve(newArr);  // resolve returns data and continues in the .then() route
     } else {
       reject('Error in secondMethod'); // reject returns 'Error in...' and continues in the .catch() route
+    }
+  });
+  return promise;
+}
+
+function concatFive(input) {
+  var promise = new Promise( (resolve, reject)=> {
+    if(input){
+      resolve(input);  // resolve returns data and continues in the .then() route
+    } else {
+      reject('Error in concatFive'); // reject returns 'Error in...' and continues in the .catch() route
     }
   });
   return promise;
@@ -63,43 +79,39 @@ function failure(input) {
 app.get('/', (request, response) => {
   httpGet(apiOptions)
     .then((output) => {
-      filterForGet(output)
-      .then((output) => {
-        response.json({data: output});
-      })
-      .catch((output) => {
-        failure(output);
-      });
+      return filterForGet(output);
     })
-    .catch((output)=> {
+    .then((output) => {
+      response.json({data: output});
+    })
+    .catch((output) => {
       failure(output);
     });
 });
 
+
 app.get('/more', (request, response) => {
-  const all = [];
-  for(let i=0;i<5;i++) {
+  // let all = [];
+
+  // const data = 'joy';
+  for(let i=0;i<1;i++) {
     const apiOptionsMore = {
-      host: 'api.giphy.com',
-      path: `/v1/gifs/trending?api_key=dc6zaTOxFJmzC?page=${i}`
+      host: '',
+      path: `/share?limit=100?page=${i}`
     };
-    console.log(i);
     httpGet(apiOptionsMore)
       .then((output) => {
-        filterForGet(output)
-        .then((output) => {
-          all.concat(output);
-          if(i>=5){
-            response.json(all);
-          }
-        })
-        .catch((output) => {
-          failure(output);
-        });
+        return filterForGet(output);
       })
-      .catch((output)=> {
-        failure(output);
-      });
+      .then((output) => {
+        return concatFive(output);
+      })
+      .then((output) => {
+        response.json({entries: output});
+      })
+    .catch((output) => {
+      failure(output);
+    });
   }
 });
 
