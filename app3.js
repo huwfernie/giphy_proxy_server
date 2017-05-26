@@ -13,6 +13,7 @@ function httpGet(options) {
   var promise = new Promise(function(resolve, reject) {
     let body = {};
     http.get(options, function(res) {
+      console.log(`sending ${options.host} -- ${options.path}`);
       console.log('STATUS: ' + res.statusCode);
       console.log('HEADERS: ' + JSON.stringify(res.headers));
 
@@ -35,7 +36,26 @@ function httpGet(options) {
   return promise;
 }
 
-function filterForGet(input) {
+function filterForGetData(input) {
+  var promise = new Promise( (resolve, reject)=> {
+    if(input){
+      // console.log(input);
+      var newArr = input.data.map(function(element){
+        return {
+          id: element.id,
+          url: element.images.fixed_height.url,
+          slug: element.slug
+        };
+      });
+      resolve(newArr);  // resolve returns data and continues in the .then() route
+    } else {
+      reject('Error in secondMethod'); // reject returns 'Error in...' and continues in the .catch() route
+    }
+  });
+  return promise;
+}
+
+function filterForGetEntires(input) {
   var promise = new Promise( (resolve, reject)=> {
     if(input){
       // console.log(input);
@@ -49,7 +69,7 @@ function filterForGet(input) {
           username: element.user.username
         };
       });
-      // console.log(newArr);
+      console.log('newArr', newArr);
       resolve(newArr);  // resolve returns data and continues in the .then() route
     } else {
       reject('Error in secondMethod'); // reject returns 'Error in...' and continues in the .catch() route
@@ -58,10 +78,15 @@ function filterForGet(input) {
   return promise;
 }
 
-function concatFive(input) {
+function concatFive(input, all) {
   var promise = new Promise( (resolve, reject)=> {
     if(input){
-      resolve(input);  // resolve returns data and continues in the .then() route
+      console.log('this one', input);
+      console.log('all', all);
+
+      const total = all.concat(input);
+      console.log('total', total);
+      resolve(total);  // resolve returns data and continues in the .then() route
     } else {
       reject('Error in concatFive'); // reject returns 'Error in...' and continues in the .catch() route
     }
@@ -79,7 +104,7 @@ function failure(input) {
 app.get('/', (request, response) => {
   httpGet(apiOptions)
     .then((output) => {
-      return filterForGet(output);
+      return filterForGetData(output);
     })
     .then((output) => {
       response.json({data: output});
@@ -91,23 +116,29 @@ app.get('/', (request, response) => {
 
 
 app.get('/more', (request, response) => {
-  // let all = [];
+  var all = [];
 
   // const data = 'joy';
-  for(let i=0;i<1;i++) {
+  for(let i=1;i<=3;i++) {
     const apiOptionsMore = {
       host: '',
-      path: `/share?limit=100?page=${i}`
+      path: `/share?limit=2?page=${i}`
     };
     httpGet(apiOptionsMore)
       .then((output) => {
-        return filterForGet(output);
+        return filterForGetEntires(output);
       })
       .then((output) => {
-        return concatFive(output);
+        return concatFive(output, all);
       })
       .then((output) => {
-        response.json({entries: output});
+        all = output;
+        if (output.length >= 6 ){
+          response.json({entries: output});
+        } else {
+          console.log(i);
+          return;
+        }
       })
     .catch((output) => {
       failure(output);
