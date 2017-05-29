@@ -39,7 +39,6 @@ function httpGet(options) {
 function filterForGetData(input) {
   var promise = new Promise( (resolve, reject)=> {
     if(input){
-      // console.log(input);
       var newArr = input.data.map(function(element){
         return {
           id: element.id,
@@ -60,7 +59,6 @@ function filterForGetEntires(input) {
     if(input){
       // console.log(input);
       var newArr = input.entries.map(function(element){
-        // console.log(element.id);
         return {
           date_created: element.date_created,
           likes: element.likes.length,
@@ -69,26 +67,9 @@ function filterForGetEntires(input) {
           username: element.user.username
         };
       });
-      console.log('newArr', newArr);
       resolve(newArr);  // resolve returns data and continues in the .then() route
     } else {
       reject('Error in secondMethod'); // reject returns 'Error in...' and continues in the .catch() route
-    }
-  });
-  return promise;
-}
-
-function concatFive(input, all) {
-  var promise = new Promise( (resolve, reject)=> {
-    if(input){
-      console.log('this one', input);
-      console.log('all', all);
-
-      const total = all.concat(input);
-      console.log('total', total);
-      resolve(total);  // resolve returns data and continues in the .then() route
-    } else {
-      reject('Error in concatFive'); // reject returns 'Error in...' and continues in the .catch() route
     }
   });
   return promise;
@@ -118,31 +99,29 @@ app.get('/', (request, response) => {
 app.get('/more', (request, response) => {
   var all = [];
 
-  // const data = 'joy';
-  for(let i=1;i<=3;i++) {
-    const apiOptionsMore = {
-      host: 'no.me --',
-      path: `/share?limit=2?page=${i}`
+
+  // const i =1;
+  for(let i=1; i<= 5; i++){
+    const apiOptionsPages = {
+      host: '',
+      path: `/share?limit=100&page=${i}`
     };
-    httpGet(apiOptionsMore)
+    httpGet(apiOptionsPages)
       .then((output) => {
         return filterForGetEntires(output);
       })
       .then((output) => {
-        return concatFive(output, all);
-      })
-      .then((output) => {
-        all = output;
-        if (output.length >= 6 ){
-          response.json({entries: output});
+        all = all.concat(output);
+        if (all.length >= 500 ) {
+          console.log('done ', all.length);
+          response.json({ entries: all });
         } else {
-          console.log(i);
-          return;
+          console.log('not yet! ', all.length);
         }
       })
-    .catch((output) => {
-      failure(output);
-    });
+      .catch((output) => {
+        failure(output);
+      });
   }
 });
 
