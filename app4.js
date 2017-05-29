@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const http = require('http');
+const json2csv = require('json2csv');
+const fs = require('fs');
 
 
 const apiOptions = {
@@ -76,6 +78,20 @@ function filterForGetEntires(input) {
 }
 
 
+function csv(inputData){
+  return new Promise((resolve) => {
+    const fields = ['date_created', 'likes', 'title', 'cover_url', 'username'];
+    const csv = json2csv({ data: inputData, fields: fields });
+
+    fs.writeFile('file500.csv', csv, function(err) {
+      if (err) throw err;
+      // console.log('file saved');
+      resolve();
+    });
+  });
+}
+
+
 function failure(input) {
   console.log('failure ',input);
 }
@@ -96,7 +112,7 @@ app.get('/', (request, response) => {
 });
 
 
-app.get('/more', (request, response) => {
+app.get('/share.csv', (request, response) => {
   var all = [];
 
 
@@ -114,7 +130,14 @@ app.get('/more', (request, response) => {
         all = all.concat(output);
         if (all.length >= 500 ) {
           console.log('done ', all.length);
-          response.json({ entries: all });
+          // response.json({ entries: all });
+          csv(all)
+          .then(() => {
+            response.download('./file500.csv', '500.csv');
+          })
+          .catch((output) => {
+            failure(output);
+          });
         } else {
           console.log('not yet! ', all.length);
         }
